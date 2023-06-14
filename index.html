@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width">
+    <script src="./rot.js"></script>
+    <script type="text/javascript" src="https://www.guitarland.com/javascripts/Tone.js"></script>
+	<script type="text/javascript" src="https://www.guitarland.com/javascripts/StartAudioContext.js"></script>
+    <script src="https://www.guitarland.com/javascripts/Rhythm.js"></script>
+    <script src="https://www.guitarland.com/javascripts/instruments.js"></script>
+    <script src="https://www.guitarland.com/javascripts/lilyPondAdapter.js"></script>
+
+    <style src="./src/styles.css"></style>
+  
+    <title>Music Theory Game</title>
+    <style>
+        @font-face {
+            font-family: MusiSync;
+            src: local(MusiSync), url('https://www.guitarland.com/fonts/MusiSync.ttf') format('opentype');
+        }
+        @font-face {
+            font-family: Maestro;
+            src: local(Maestro), url('https://www.guitarland.com/fonts/Maestro.ttf') format('opentype');
+        }
+        @font-face {
+            font-family: MaestroTimes;
+            src: local(Maestro), url('https://www.guitarland.com/fonts/MaestroTimes.ttf') format('opentype');
+        }
+        body {
+            width: 90%;
+        /*    max-width: 1000px; */
+            margin: 2em auto;
+            font: .9em/1.2 Arial, Helvetica, sans-serif;
+        }
+
+        .container {
+            display: grid;
+            grid-template-columns: 2fr 3fr;
+            gap: 10px;
+        }
+
+        .container > div {
+            border-radius: 25px;
+            padding: 10px;
+            background-color: white;
+            border: 2px solid rgb(79,185,227);
+        }
+        .questionText {
+            font-size: 1.2em;
+        }
+        .correctAnswer {
+            font-size: 1.2em;
+            background-color: #ededff;
+            border: none;
+            color: green;
+        }
+        .incorrectAnswer {
+            font-size: 1.2em;
+            background-color: #ffdddd;
+            border: none;
+            color: black;
+        }
+        .answerButtons {
+            font-size: 1.3em;
+        }
+        .instructions {
+          height: 600px;
+/*      width: 600px; */
+        }
+        .instructionText {
+            font-size: 1.2em;
+            background-color: #ffffff;
+            border: none;
+            color: rgb(0, 0, 0);
+        }
+
+        h1 {
+            font-size: 3.5em;
+            text-align: center;
+            color: #dd0000;
+            text-shadow: 1px 2px 3px black;
+        }
+        h2 {
+            font-size: 2.5em;
+            text-align: left;
+            color: #dd0000;
+            text-shadow: 1px 2px 3px black;
+        }
+    </style>
+  </head>
+
+<body>
+    <script src="./src/index.js"></script>
+    <h1>Music Theory Game</h1>
+
+    <div class="container">
+      <div>
+            <div class="center" id="canvas"></div>
+      </div>
+
+      <div>
+        <input type="checkbox" id="muteSound" name="muteSound" value="">
+        <label for="muteSound">mute sound</label><br>
+        <div class='instructions'>
+            <h1>Game Instructions</h1> 
+            <p class="instructionText">
+            Use the arrow keys (⬅️,⬆️,⬇️,➡️) to move the butterfly.  When you land on the musical notes you will 
+            be asked a music question.  You will be frozen in place until you submit a correct answer. 
+            Eventually your correct answers will earn you 'applause' as you find a path to the globe 
+            in the lower right corner to refresh the game. Each row contains questions on a specific topic.
+            Rows 1-3 deal with <b>Note Identification</b>. Row 4 is about <b>Major Scales</b>. Rows 5 and 6 are about
+            <b>Note values</b> and <b>Meter</b> and Row 7 is on <b>Major Key Signatures</b>. Rows 8-9 are about 
+            <b>Minor Scales</b>, Rows 10-11 are about <b>Intervals</b>, Rows 12-13 are about <b>Triads</b> and 
+            finally the bottom row, Row 14, is about <b>Modes of the major scale</b>.
+            <p class='applause instructionText'></p>
+          </p>
+        </div>
+        
+        <form id='myForm'>
+        <div id="questionDiv">
+            <h2 class="questionTitle">question 1</h2>
+            <div id="testNumberDiv">
+              <input type="hidden" id="testSelect" value=0>
+            </div>
+            <p> <span class='questionText'>.</span></p>
+              <p><span id='display1'></span> <span id='reload'></span></p>
+            <!-- Canvas where the notation is displayed -->
+            <canvas id="myCanvas" width="700" height="130">
+              Your browser does not support the canvas element.
+            </canvas><br /><br />
+            <div id='evalButton'> <input type='submit' id='evaluateButton' name='evaluateButton' value='Evaluate Answer'></div>
+           <br>
+            <div class="answerButtons">.</div>
+          </div>
+          </form>
+        </div>        
+
+    </div>
+<!--    <script src="https://www.guitarland.com/javascripts/musicNotationCanvas.js"></script> -->
+    <script src="../../../Github/musicNotationCanvas/musicNotationCanvas.js"></script>
+    <script src="./sampleQuestions.js"></script>
+  
+</body>
+
+</html>
