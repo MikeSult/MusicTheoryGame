@@ -18,6 +18,7 @@ let theFontLetters = [];
 let theFontLetters2 = [];
 let randomQuestion = 0;
 let nextIndex = 0;
+let newNotes;
 //let currentClef = 'treble';
 let currentClef = 'bass';
 
@@ -152,9 +153,9 @@ const allNotesBass = [t01NotesBass, t02NotesBass, t03NotesBass, t04NotesBass, t0
 
 const buttonT01Choices = ['A','B','C','D','E','F','G'];
 const buttonT02Choices = ['A','B','C','D','E','F','G'];
-const buttonT03Choices = ['Ab','Bb','C#','Db','Eb','F#','G#'];
+const buttonT03Choices = ['Ab','A#','Bb','C#','Db','D#','Eb','F#','Gb','G#'];
 const buttonT04Choices = ['Spelled correctly','The 2nd note is wrong','The 3rd note is wrong','The 4th note is wrong','The 5th note is wrong','The 6th note is wrong','The 7th note is wrong'];
-const buttonT05Choices = ['1/4 of a count','1/2 of a count','1 count','1 1/2 counts','2 counts','3 counts','4 counts'];
+const buttonT05Choices = ['1/4 of a count','1/2 of a count','1 count','1 1/2 counts','2 counts','3 counts','4 counts','6 counts'];
 const buttonT06Choices = ['The measure is correct','Too many counts in the shown measure','Not enough counts in the shown measure'];
 const buttonT07Choices = ['Ab major','A major','Bb major','B major','C major','Db major','D major','Eb major','E major','F major','F# major','Gb major','G major'];
 const buttonT08Choices = ['natural minor','harmonic minor','melodic minor','none of the three minor forms'];
@@ -175,7 +176,7 @@ function makeRadioButtons(arrayOfChoices, id) {
     arrayOfChoices.forEach(choice => {
         numOfChars += choice.length + 3;
         html += "<input type='radio' id='"+choice+"' name='"+id+"' value='"+choice+"'><label for='"+choice+"'>"+choice+"</label> | "; 
-        if(numOfChars > 50) {
+        if(numOfChars > 35) {
             html += '<br>';
             numOfChars = 0;
         }
@@ -205,7 +206,8 @@ const durationToQuarterNoteCounts = {
 }
 
 const countsToText = {
-    0.25: '1/4', 0.5: '1/2', 1: '1', 2: '2', 3: '3', 4: '4',
+    0.25: '1/4', 0.5: '1/2', 
+    1: '1', 2: '2', 3: '3', 4: '4', 5: '5', 6: '6',
     0.375: '3/8', 0.75: '3/4', 1.5: '1 1/2', 2.5: '2 1/2'    
 }
   
@@ -224,7 +226,7 @@ const keyNoteToMajorScale = {
     'F': ['F','G','A','Bb','C','D','E','F'],
     'F#': ['F#','G#','A#','B','C#','D#','E#','F#'],
     'Gb': ['Gb','Ab','Bb','Cb','Db','Eb','F','Gb'],
-    'G': ['G','A','B','C','D','E','F#','G']    
+    'G': ['G','A','B','C','D','E','F#','G']
 }
 
 
@@ -447,7 +449,7 @@ function updateQuestions2() {
 //    console.log('textAreas='+textAreas);
 
     let testSelection = document.querySelector('#testSelector').value;
-//    console.log('testSelection='+testSelection+' typeof(testSelection)='+typeof(testSelection));
+    console.log('testSelection='+testSelection+' typeof(testSelection)='+typeof(testSelection));
     // set allNotes
     let clefChoice = getRandomInt(2);
 //    console.log(` clefChoice= ${clefChoice} currentClef=${currentClef} `);
@@ -473,8 +475,20 @@ function updateQuestions2() {
     lastNum2 = lastNum;
     lastNum = randomQuestion;
     
-    let newNotes = testNotes[randomQuestion];
+    // newNotes is now global
+    newNotes = testNotes[randomQuestion];
+//    let newNotes = testNotes[randomQuestion];
 
+    // new code ----------------------------------------------
+    if( testSelection == 0 || testSelection == 1 || testSelection == 2 ||
+          testSelection == 3 || testSelection == 4 || testSelection == 5 || 
+          testSelection == 6 || testSelection == 8 || testSelection == 11 ){
+        let noteGenerator = makeNoteFunctions[testSelection];
+        newNotes = noteGenerator();
+        console.log('newNotes=\n'+newNotes);
+    }
+    //--------------------------------------------------------*/
+    
     titleAreas.forEach(title => {
         title.innerHTML = questionTitles[testSelection];
     });
@@ -492,9 +506,11 @@ function updateQuestions2() {
         DrawTheKeySignature(newNotes[0], 'myCanvas', currentClef);
     } else if(testSelection == 4 || testSelection == 5) {
         DrawRhythms(newNotes, 'myCanvas');
+        let numOfNotes = newNotes.length;
+        const noteSpacing = 50;
         if(testSelection == 5) {
             music.drawBarline(100);
-            music.drawBarline(350);
+            music.drawBarline(120 + (noteSpacing * numOfNotes));
         }
 
     } else if(testSelection == 8) {
@@ -646,8 +662,9 @@ function evaluate() {
 //    console.log('start evaluate()-----------------');
     let msg = ''
     let testSelection = document.querySelector('#testSelector').value;
-    let testNotes = allNotes[testSelection];
-    let newNotes = testNotes[randomQuestion];
+    // newNotes is now global and already set by different means in updateQuestion2()
+//    let testNotes = allNotes[testSelection];
+//    let newNotes = testNotes[randomQuestion];
     isCorrect = false;
 //    console.log('newNotes='+newNotes+' newNotes2='+newNotes2);
     if(testSelection < 3) {
@@ -671,7 +688,7 @@ function evaluate() {
 	if(correctAnswer1 == studentAnswer1) {
         let hitNewGoal = Game.playGoal();
 		msg = '&nbsp;&nbsp;<span class="correctAnswer">Your answer &quot;'+studentAnswer1+'&quot;';
-        msg += ' is correct. <b>You can use the arrow keys to move the butterfly!</b></span>';
+        msg += ' is correct. <br /><b>You can use the arrow keys to move the butterfly!</b></span>';
         if(hitNewGoal){
             msg += ' <br /><br /><span class="correctAnswer"><b>Congratulations on reaching a new goal!';
             msg += ' ' + GameWorld.count + ' correct.</b></span>';
@@ -679,10 +696,14 @@ function evaluate() {
     } else {
 		msg = '&nbsp;&nbsp;<span class="incorrectAnswer">Your answer &quot;'+studentAnswer1+'&quot;';
         msg += ' is incorrect, the correct answer is <b>'+correctAnswer1+'</b>.';
-        msg += ' Click the reload button to try again.</span>';        
+        msg += ' Click the reload button to try again.</span><br /><br />';        
 	}
 	document.querySelector('#display1').innerHTML = msg;
 //    console.log('Answer='+msg);
+    let evalButton = document.querySelector('#evalButton');
+    evalButton.style.display = 'none';
+    let answerButtons = document.querySelector('.answerButtons');
+    answerButtons.style.display = 'none';
 
     isCorrect = (correctAnswer1 == studentAnswer1);
     if(!isCorrect){
@@ -690,11 +711,6 @@ function evaluate() {
         let reload = document.querySelector('#reload');
         reload.innerHTML = reloadButton;
         reload.onclick = updateQuestions2;
-        let evalButton = document.querySelector('#evalButton');
-        evalButton.style.display = 'none';
-        let answerButtons = document.querySelector('.answerButtons');
-        answerButtons.style.display = 'none';
-
 	    isFrozen = true; // defined in index.js
     } else {
         let reload = document.querySelector('#reload');
@@ -816,7 +832,7 @@ function getCorrectAnswer_T08(array) {
 
 function getCorrectAnswer_T10_13(array) {
     let answer = array[array.length - 1];
-    console.log('array='+array+' answer='+answer);
+//    console.log('array='+array+' answer='+answer);
     return answer;
 }
 
@@ -933,4 +949,411 @@ const goal4 = "\\relative c'' { e16 d c e d c b d c a' gis b a e f d gis, f' e d
 const goal5 = "\\relative c'' { g16 b d b g d' b g g' d fis a fis d a' fis d c' b a g fis g a d, g fis g fis e d c b a b c b a g fis g a d, g fis g d b g b d g4 }";
 const goal6 = "\\relative c' { c32 cis d dis e f fis g gis a ais b c cis d dis e f fis g gis a ais b c b bes a aes g ges f e ees d des c b bes a aes g ges f e ees d des c4 }";
 
-const goalMusic = [goal1, goal2, goal3, goal4, goal5, goal6];
+const levelEnd = "\\relative c'' { c32 b bes a aes g ges f e ees d des c b bes a aes g ges f e ees d des c32 cis d dis e f fis g gis a ais b c cis d dis e f fis g gis a ais b c16 c, c, c' c' c,4 }";
+
+// value of musicLen = 6 (defined in index.js) determines the range of 
+// music that is looped, the last one of the array doesn't loop and is used for level end music
+// (if more goals are defined be sure to update musicLen in index.js)
+// function getMusicLoopLen(){ return goalMusic.length-1; }
+
+const goalMusic = [goal1, goal2, goal3, goal4, goal5, goal6, levelEnd];
+
+
+//-------------------------------------------------------------------------
+// functions for generating question material for Music Theory Game
+// Most need to generate question for both treble and bass clef 
+//-------------------------------------------------------------------------
+//
+
+function swapItems(array,index1,index2){
+    const value1 = array[index1];
+    const value2 = array[index2];
+    let newArray = [];
+    for(let i=0; i<array.length; i++){
+        if(i==index1){
+            newArray.push(value2);
+        } else if(i==index2){
+            newArray.push(value1);
+        } else {
+            newArray.push(array[i]);
+        }
+    }
+    return newArray;
+}
+
+function makeIndices(len){
+    let indexArray = [];
+    for(let i=0; i<len; i++){
+        indexArray.push(i);
+    }
+    return indexArray;
+}
+
+// scrampleValues() is used to make an array of numbers to be used as indices of
+// another array.  The other array can then be accessed with two criteria
+// 1) somewhat random order 2) all of the indices be used before amy repeats.
+function scrampleValues(len){
+    let myArray = makeIndices(len);
+    let num = 0;
+    let numOfChanges = 0;
+    if(len>4){
+        num = getRandomInt(3);
+        myArray = swapItems(myArray, 0, len-1);
+        myArray = swapItems(myArray, 1, len-(1+num));
+        myArray = swapItems(myArray, 2, len-(2+num));
+        numOfChanges += 3;
+    }
+    if(len>7){
+        num = getRandomInt(4);
+        myArray = swapItems(myArray, 4, len-(2+num)); 
+        numOfChanges += 1;
+    }
+    if(len>10){
+        num = getRandomInt(4);
+        myArray = swapItems(myArray, 5, len-(3+num));
+        num = getRandomInt(6);
+        myArray = swapItems(myArray, 1, len-(1+num));
+        numOfChanges += 2;
+    }
+//    console.log('numOfChanges='+numOfChanges);
+    return myArray;
+}
+// single notes within specified range(s)
+// second parameter false for test 1 ans 2, true for test 3
+
+let indices0 = scrampleValues(11);
+// testSelection 0
+function makeSingleNoteQuestion1(){
+    // returns ['D4']
+    // use only natural notes on the staff
+//    const range = [[D4,G5],[F2,B3]]; // range[0] for treble clef, range[1] for bass clef
+    const trebleRange = ['D4','E4','F4','G4','A4','B4','C5','D5','E5','F5','G5'];
+    const bassRange = ['F2','G2','A2','B2','C3','D3','E3','F3','G3','A3','B3'];
+    const len = trebleRange.length;
+    let myRange = [];
+    let myNote = [];
+    if(currentClef == 'treble'){
+        myRange = trebleRange;
+    } else if(currentClef == 'bass'){
+        myRange = bassRange;
+    }
+    myNote.push(myRange[ indices0[randomStart % len] ]);
+    return myNote;
+}
+
+let indices1 = scrampleValues(6);
+// testSelection 1
+function makeSingleNoteQuestion2(){
+    // returns ['A5']
+    // use only natural notes on ledger lines above and below the staff
+    let myRange = [];
+//    const range = [[A5,E6],[E3,C4],[C4,A4],[G1,E2]] // range[0] and [1] treble clef, range[2] and [3] bass clef
+    const trebleRangeAbove = ['A5','B5','C6','D6','E6','F5'];
+    const trebleRangeBelow = ['C4','B3','A3','G3','F3','E3'];
+    const bassRangeAbove = ['C4','D4','E4','F4','G4','A4'];
+    const bassRangeBelow = ['E2','D2','C2','B1','A1','G1']
+    const len = trebleRangeAbove.length;
+
+    if(currentClef == 'treble'){
+        myRange.push(trebleRangeAbove);
+        myRange.push(trebleRangeBelow);
+    } else if(currentClef == 'bass'){
+        myRange.push(bassRangeAbove);
+        myRange.push(bassRangeBelow);
+    }
+    const below = getRandomInt(2);
+    let myNote = [];
+    if(below){
+        myNote.push(myRange[1][ indices1[randomStart % len] ]);
+    } else {
+        myNote.push(myRange[0][ indices1[randomStart % len] ]);
+    }
+    return myNote;
+}
+
+let indices2 = scrampleValues(11);
+// testSelection 2
+function makeSingleNoteQuestion3(){
+    // returns ['D#4']
+    // use chromatic notes within the staff
+//    const range = [[D4,G5],[F2,B3]]; // range[0] treble clef, range[1] bass clef
+    const trebleRange = ['D#4','Eb4','F#4','G#4','Ab4','Bb4','C#5','Db5','Eb5','F#5','Gb5'];
+    const bassRange = ['F#2','G#2','Ab2','Bb2','C#3','D#3','Eb3','F#3','Gb3','A#3','Bb3'];
+    const len = trebleRange.length;
+    let myRange = [];
+    let myNote = [];
+    if(currentClef == 'treble'){
+        myRange = trebleRange;
+    } else if(currentClef == 'bass'){
+        myRange = bassRange;
+    }
+    myNote.push(myRange[ indices2[randomStart % len] ]);
+    return myNote;
+}
+
+// major scale or one mistake
+let indices3 = scrampleValues(12);
+// testSelection 3
+function makeMajorScaleQuestion() {
+    // returns ['C4','D4','E4','F4','G4','A4','Bb4','C5'] (7th note is wrong)
+    const major = [0, 2, 4, 5, 7, 9, 11];
+    const letters = ['Ab','A','Bb','B','C','Db','D','Eb','E','F','F#','G'];
+    const lettersLen = letters.length;
+    let root = letters[ indices3[randomQuestion % lettersLen] ];
+    // randomQuestion++;
+
+    let octave = 4;
+    if(currentClef == 'bass'){ octave = 2; }
+    let rootOctave = root + octave;
+    let majorScale = spellScale(major, rootOctave);
+    // change one note 
+    let randNum1 = getRandomInt(3);
+    let randNum2 = getRandomInt(6);
+    let aNote = '';
+    let noteOctave = '';
+    //  except when randNum == 0, change a note in the scale.
+    if(randNum1>0){
+        let hasSharps = false;
+        let hasFlats = false;
+        for(let i=0; i<majorScale.length; i++){
+            aNote = majorScale[i];
+            if(aNote.includes('b')){
+                hasFlats = true;
+            }
+            if(aNote.includes('#')){
+                hasSharps = true;
+            }
+            if(i==(randNum2+1)){
+                // change this note in some way
+//                console.log('aNote='+aNote);
+                if(aNote.includes('b')){
+                    // remove flat
+                    noteOctave = aNote.slice(aNote.length-1,aNote.length)
+                    aNote = aNote.slice(0,aNote.length-2); // chop off the 'b'
+                    aNote += noteOctave;
+                } else if(aNote.includes('#')){
+                    // remove sharp
+                    noteOctave = aNote.slice(aNote.length-1,aNote.length)
+                    aNote = aNote.slice(0,aNote.length-2); // chop off the '#'
+                    aNote += noteOctave;
+                } else {
+                    // add a sharp or flat depending on hasSharps or hasFlats
+                    noteOctave = aNote.slice(aNote.length-1,aNote.length)
+                    aNote = aNote.slice(0,aNote.length-1);
+                    if(hasFlats){
+                        aNote += 'b' + noteOctave;
+                    } else if(hasSharps){
+                        aNote += '#' + noteOctave
+                    } else {
+                        if(randNum1==0){
+                            aNote += 'b';
+                        } else {
+                            aNote += '#';
+                        }
+                        aNote += noteOctave;
+                    }
+                }
+                majorScale[i] = aNote;
+            }
+        }        
+    }
+    return majorScale;
+}
+
+// time signature - single note duration
+let indices4 = scrampleValues(9);
+// testSelection 4
+function makeNoteDurationQuestion() {
+    // returns ['6/8','8n']
+    const timeSigs = ['2/4','3/8','4/4','6/8','2/2','3/4','5/4','12/8','3/2'];
+    const noteValues = ['d4n','4n','8n','d2n','2n'];
+    const tLen = timeSigs.length;
+    const nLen = noteValues.length;
+    const myTimeSig = timeSigs[indices4[randomStart % tLen]];
+    let myNote;
+    if(myTimeSig == '2/4' || myTimeSig == '3/8'){
+        myNote = noteValues[randomStart % (nLen-2)] 
+    } else {
+        myNote = noteValues[randomStart % nLen];
+    }
+    let timeAndNote = [];
+    timeAndNote.push(myTimeSig);
+    timeAndNote.push(myNote);
+    return timeAndNote;
+}
+
+// time signature - full? measure
+let indices5 = scrampleValues(9);
+function makeMeterQuestion() {
+    // returns ['6/8','8n','4n','2n'] (too much time in the measure) (is correct || not enough time)
+    let oneMeasure = []; // us this as return value
+    const timeSigs = ['2/4','3/8','4/4','6/8','2/2','3/4','5/4','4/8','3/2'];
+    const measures = [[['8n','4n','8n'],['8n','8n','8n','8n']],
+                      [['4n','8n'],['8n','8n','8n']],
+                        [['4n','8n','8n','2n'],['2n','d4n','8n']],
+                          [['4n','8n','4n','8n'],['8n','8n','8n','d4n']],
+                            [['4n','4n','2n'],['8n','8n','4n','d4n','8n']],
+                              [['d4n','8n','4n'],['2n','8n','8n']],
+                                [['4n','4n','2n','4n'],['2n','4n','8n','8n','4n']],
+                                  [['4n','4n'],['8n','4n','8n']],
+                                    [['2n','d2n','4n'],['4n','4n','2n','d8n','8n']]];
+    const noteSwapUp = {
+        '8n': '4n', '4n': '2n', '2n': 'd2n', 'd8n': '4n', 'd4n': '2n', 'd2n': '1n'
+    }
+    const noteSwapDown = {
+        '8n': '16n', '4n': '8n', '2n': '4n', 'd4n': '4n', 'd8n': '8n', 'd2n': '2n'
+    }
+    const len = timeSigs.length;
+    let index = indices5[randomStart % len];
+    const whichRhythm = getRandomInt(2);
+    let aMeasure = measures[index][whichRhythm]; // pick one of the two rhythm for this timeSig
+    console.log('index='+index+' whichRhythm='+whichRhythm+' aMeasure='+aMeasure);
+    let measureLen = aMeasure.length;
+    let whichType = getRandomInt(4);
+
+    // create oneMeasure
+    oneMeasure.push(timeSigs[index]);
+    if(whichType == 0 || whichType == 3){
+        // create correct measure (about 50% of the time)
+        oneMeasure.push(aMeasure);
+        console.log('unchanged');
+    } else if(whichType == 1){
+        // make a too many counts version by swapping out one value (25% of the time)
+        let changeIndex = getRandomInt(measureLen);
+        let changedNote = noteSwapUp[aMeasure[changeIndex]];
+        aMeasure[changeIndex] = changedNote;
+        oneMeasure.push(aMeasure);
+        console.log('changed: too many counts');
+    } else if(whichType == 2){
+        // make a too few counts version by swapping out one value (25% of the time)
+        let changeIndex = getRandomInt(measureLen);
+        let changedNote = noteSwapDown[aMeasure[changeIndex]];
+        aMeasure[changeIndex] = changedNote;
+        oneMeasure.push(aMeasure);
+        console.log('changed: not enough counts');
+    }
+    console.log('oneMeasure='+oneMeasure.flat());
+    return oneMeasure.flat();
+}
+
+// major key signatures
+let indices6 = scrampleValues(12);
+function makeMajorKeySigQuestion() {
+    // returns ['D']
+    const majorKeySigsNames = [['C'],['Db'],['D'],['Eb'],['E'],['F'],['F#'],['G'],['Ab'],['A'],['Bb'],['B']];
+    const len = majorKeySigsNames.length;
+    const key = majorKeySigsNames[ indices6[randomStart % len] ];
+    return key;
+}
+
+// minor scale, three forms or wrong scale
+let indices7 = scrampleValues(7);
+function makeMinorScaleQuestion() {
+    // returns ['C4','D4','Eb4','F4','G4','Ab4','Bb4','C5']
+}
+
+// minor key signatures
+let indices8 = scrampleValues(12);
+function makeMinorKeySigQuestion() {
+    // returns ['D']
+    const minorKeySigsNames = [['A'],['Bb'],['B'],['C'],['C#'],['D'],['D#'],['E'],['F'],['F#'],['G'],['G#']];
+    const len = minorKeySigsNames.length;
+    const key = minorKeySigsNames[ indices8[randomStart % len] ];
+//    const relativeMajorKey = minorToRelativeMajor[key];
+    console.log('key='+key);
+    return key;
+}
+
+// interval numbers
+let indices9 = scrampleValues(7);
+function makeIntervalNumberQuestion() {
+    // returns ['B3','G4','6th']
+}
+
+// interval names
+let indices10 = scrampleValues(7);
+function makeIntervalNameQuestion() {
+    // returns ['Bb3','G4','Maj6']
+}
+
+// triad quality
+let indices11 = scrampleValues(14);
+function makeTriadQuality() {
+    // returns ['D4','F#4','A4','Major'] ('Minor' || 'Diminished' || 'Augmented')
+
+    // structures defined in scaleSpelling.js
+    const chordStructures = [MAJ_TRIAD, AUG_TRIAD, MIN_TRIAD, DIM_TRIAD]; 
+    let isAugmented = false;
+    let isDiminished = false;
+    const roots = ['Ab','A','Bb','B','C','C#','Db','D','Eb','E','F','F#','G','G#'];
+    const len = roots.length;
+    const randNum = getRandomInt(4); // to pick which type of chord
+    if(randNum == 0){
+        chordName = 'Major';
+    } else if(randNum == 1){
+        chordName = 'Augmented'
+        isAugmented = true;
+    } else if(randNum == 2){
+        chordName = 'Minor'
+    } else if(randNum == 3){
+        chordName = 'Diminished'
+        isDiminished = true;
+    }
+    let theIndex = indices11[randomStart % len];
+    let rootAndOctave = roots[ theIndex ];
+//    console.log('theIndex='+theIndex+' root='+rootAndOctave);
+    if(currentClef == 'treble'){
+        rootAndOctave += '4';
+    } else if(currentClef == 'bass'){
+        if(rootAndOctave.includes('A') || rootAndOctave.includes('B')){
+            rootAndOctave += '2';
+        } else {
+            rootAndOctave += '3';
+        }
+    }
+    let chordType = chordStructures[randNum];
+    //--------------------------------------------------------
+    // catch the weird edge case's i.e. G# aug or Ab dim
+    if( isAugmented && (rootAndOctave.includes('G#') || rootAndOctave.includes('C#')) ){
+        // change chord to minor
+        chordType = [0,4,7];
+        chordName = 'Major';
+    } else if( isAugmented && (rootAndOctave.includes('F#') || rootAndOctave.includes('B')) ){
+        // change chord to major
+        chordType = [0,4,7];
+        chordName = 'Major';
+    } else if( isDiminished && (rootAndOctave.includes('Ab') || rootAndOctave.includes('Db')) ){
+        // change chord to major
+        chordType = [0,3,7];
+        chordName = 'Minor';
+    } else if( isDiminished && rootAndOctave.includes('Eb') ){
+        // change chord to major
+        chordType = [0,3,7];
+        chordName = 'Minor';
+    }
+    //--------------------------------------------------------
+    // spellChord defined in scaleSpelling.js
+    let myChord = spellChord(chordType, rootAndOctave, [1,3,5]); 
+    myChord.push(chordName);
+//    console.log('myChord='+myChord);
+    return myChord;
+}
+
+// triad inversion
+let indices12 = scrampleValues(7);
+function makeTriadInversion() {
+    // returns ['C3','E3','G3','Root position'] (1st inversion || 2nd inversion)
+}
+
+// modes of the major scale
+let indices13 = scrampleValues(7);
+function makeModeOfMajorScale() {
+    // return ['C4','D4','E4','F4','G4','A4','Bb4','C5','Mixolydian'] (any of the modes)
+}
+
+const makeNoteFunctions = {
+    0: makeSingleNoteQuestion1, 1: makeSingleNoteQuestion2, 2: makeSingleNoteQuestion3,
+    3: makeMajorScaleQuestion, 4: makeNoteDurationQuestion, 5: makeMeterQuestion,
+    6: makeMajorKeySigQuestion, 7: makeMinorScaleQuestion, 8: makeMinorKeySigQuestion,
+    11: makeTriadQuality, 
+} 

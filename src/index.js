@@ -1,6 +1,6 @@
 //import "./styles.css";
 //import * as ROT from "rot-js";
-let randomizeValue = 0.7;
+let randomizeValue = 0.45;
 let musicLen = 6;
 
 const displayOptions = {
@@ -49,6 +49,11 @@ let Game = {
     }
   },
   createLevel: function () {
+    if(randomizeValue > 0.8){
+      randomizeValue = 0.4
+    }
+    randomizeValue += 0.05;
+    console.log('randomizeValue='+randomizeValue)
     GameWorld.generate();
   },
   draw: function () {
@@ -70,7 +75,8 @@ let Game = {
   endGame: function () {
     this.win = true;
     Display.clear();
-    Display.draw(8, 8, "You logged the rocket!", "violet");
+//    Display.draw(8, 8, "You logged the rocket!", "violet");
+    playIt( musicLen );      
   }
 };
 
@@ -161,7 +167,7 @@ let Player = {
       action = this.handleKey(e);
     } //Await a valid movement
 
-    // make it end when the rocket reaches the earth
+    // new screen when the butterfly reaches the earth
     if (GameWorld.map[this.x][this.y] === "🌍") {
       Game.endGame();
       Game.createLevel();
@@ -231,7 +237,7 @@ function hideQuestion(){
   document.querySelector('.instructions').style.display='inline';
   if(GameWorld.count>1){
     const applause = document.querySelector('.applause');
-    let applauseText = 'You have earned this much applause: ';
+    let applauseText = 'You have earned much applause: ';
     for(let i=0; i<GameWorld.count; i++){
       applauseText += "👏";
     }
