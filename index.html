@@ -9,6 +9,7 @@
     <script src="https://www.guitarland.com/javascripts/Rhythm.js"></script>
     <script src="https://www.guitarland.com/javascripts/instruments.js"></script>
     <script src="https://www.guitarland.com/javascripts/lilyPondAdapter.js"></script>
+    <script src="https://www.guitarland.com/javascripts/scaleSpelling.js"></script>
 
     <style src="./src/styles.css"></style>
   
@@ -123,11 +124,11 @@
               <input type="hidden" id="testSelect" value=0>
             </div>
             <p> <span class='questionText'>.</span></p>
-              <p><span id='display1'></span> <span id='reload'></span></p>
             <!-- Canvas where the notation is displayed -->
             <canvas id="myCanvas" width="700" height="130">
               Your browser does not support the canvas element.
             </canvas><br /><br />
+            <p><span id='display1'></span> <span id='reload'></span></p>
             <div id='evalButton'> <input type='submit' id='evaluateButton' name='evaluateButton' value='Evaluate Answer'></div>
            <br>
             <div class="answerButtons">.</div>
@@ -137,7 +138,7 @@
 
     </div>
 <!--    <script src="https://www.guitarland.com/javascripts/musicNotationCanvas.js"></script> -->
-    <script src="../../../Github/musicNotationCanvas/musicNotationCanvas.js"></script>
+    <script src="../musicNotationCanvas/musicNotationCanvas.js"></script>
     <script src="./sampleQuestions.js"></script>
   
 </body>
