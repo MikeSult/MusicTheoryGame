@@ -155,7 +155,7 @@ const buttonT01Choices = ['A','B','C','D','E','F','G'];
 const buttonT02Choices = ['A','B','C','D','E','F','G'];
 const buttonT03Choices = ['Ab','A#','Bb','C#','Db','D#','Eb','F#','Gb','G#'];
 const buttonT04Choices = ['Spelled correctly','The 2nd note is wrong','The 3rd note is wrong','The 4th note is wrong','The 5th note is wrong','The 6th note is wrong','The 7th note is wrong'];
-const buttonT05Choices = ['1/4 of a count','1/2 of a count','1 count','1 1/2 counts','2 counts','3 counts','4 counts','6 counts'];
+const buttonT05Choices = ['1/4 of a count','1/2 of a count','3/4 of a count','1 count','1 1/2 counts','2 counts','3 counts','4 counts','6 counts'];
 const buttonT06Choices = ['The measure is correct','Too many counts in the shown measure','Not enough counts in the shown measure'];
 const buttonT07Choices = ['Ab major','A major','Bb major','B major','C major','Db major','D major','Eb major','E major','F major','F# major','Gb major','G major'];
 const buttonT08Choices = ['natural minor','harmonic minor','melodic minor','none of the three minor forms'];
@@ -482,7 +482,8 @@ function updateQuestions2() {
     // new code ----------------------------------------------
     if( testSelection == 0 || testSelection == 1 || testSelection == 2 ||
           testSelection == 3 || testSelection == 4 || testSelection == 5 || 
-          testSelection == 6 || testSelection == 8 || testSelection == 11 ){
+          testSelection == 6 || testSelection == 7 || testSelection == 8 ||
+          testSelection == 9 || testSelection == 11 ){
         let noteGenerator = makeNoteFunctions[testSelection];
         newNotes = noteGenerator();
         console.log('newNotes=\n'+newNotes);
@@ -517,8 +518,11 @@ function updateQuestions2() {
         DrawTheMinorKeySignature(newNotes[0], 'myCanvas', currentClef);    
     } else if(testSelection > 8 ) {
         DrawMusic(newNotes.slice(0,-1), 'myCanvas', currentClef);
+        playQuestion(newNotes.slice(0,-1));
     } else {
         DrawMusic(newNotes, 'myCanvas', currentClef);
+        playQuestion(newNotes);
+        console.log('testSelection='+testSelection+' newNotes='+newNotes);
     }    
 }
 
@@ -931,6 +935,42 @@ function playIt(goalNum) {
 //    autoStop(myLoopBoolean);
 }
 
+function playQuestion(notes) {
+    let durations = [];
+    const len = notes.length;
+    for(let i=0; i<len; i++){
+        durations.push('4n');
+    }
+    let myMelody = Rhythm.mergeDurationsAndPitch(durations, notes);
+    synth1 = new Tone.Synth().toMaster();
+    melodyLine = new Tone.Part(function(time, value){
+        synth1.triggerAttackRelease(value.note, value.duration, time);
+//			console.log('value.note='+value.note+' value.duration='+value.duration+' time='+time);			
+        }, myMelody ).start();
+    synth1.volume.value = -10;
+    let tempo = 80;
+    Tone.Transport.bpm.value = tempo;   
+//    Tone.Transport.setLoopPoints(0, "12m");
+//    Tone.Transport.loopStart = '0';
+//    Tone.Transport.loopEnd = '12m';
+//    Tone.Transport.loop = false;
+/*--------------------------------------------------------
+    if(document.getElementById('swing').checked) {
+        Tone.Transport.swing = 0.3;
+    } else {
+        Tone.Transport.swing = 0;
+    }
+//------------------------------------------------------*/
+    updateMute();
+    updateVolume();
+    updateTempo();
+    Tone.Transport.start('+0.1');    
+
+    var myLoopBoolean = false;
+//    autoStop(myLoopBoolean);
+}
+
+
 var timeOutRef;
 function autoStop(myLoopBoolean) {
     let stopTime = Rhythm.getTotalTime(); // in measure format
@@ -1247,9 +1287,78 @@ function makeMajorKeySigQuestion() {
 }
 
 // minor scale, three forms or wrong scale
-let indices7 = scrampleValues(7);
+let indices7 = scrampleValues(12);
 function makeMinorScaleQuestion() {
     // returns ['C4','D4','Eb4','F4','G4','Ab4','Bb4','C5']
+
+
+    const naturalMinor = [0, 2, 3, 5, 7, 8, 10];
+    const harmonicMinor = [0, 2, 3, 5, 7, 8, 11];
+    const melodicMinor = [0, 2, 3, 5, 7, 9, 11];
+    const threeMinorScales = [naturalMinor, harmonicMinor, melodicMinor];
+    const letters = ['Ab','A','Bb','B','C','C#','D','Eb','E','F','F#','G'];
+    const lettersLen = letters.length;
+    let root = letters[ indices7[randomQuestion % lettersLen] ];
+    // randomQuestion++;
+
+    let octave = 4;
+    if(currentClef == 'bass'){ octave = 2; }
+    let rootOctave = root + octave;
+    // choose one of the minor forms
+    let randNum1 = getRandomInt(3);
+    const minor = threeMinorScales[randNum1];
+    let minorScale = spellScale(minor, rootOctave);
+    let randNum2 = getRandomInt(4); // used to choose which note to change
+    let aNote = '';
+    let noteOctave = '';
+    let randNum3 = getRandomInt(7); // determines if the scale is changed or not (maybe 1 out of 7)
+    // when randNum3 == 6, change one note of 2-5 in the scale, otherwise return it unchanged.
+    if(randNum3==6){
+        let hasSharps = false;
+        let hasFlats = false;
+        for(let i=0; i<minorScale.length; i++){
+            aNote = minorScale[i];
+            if(aNote.includes('b')){
+                hasFlats = true;
+            }
+            if(aNote.includes('#')){
+                hasSharps = true;
+            }
+            if(i==(randNum2+1)){
+                // change this note in some way
+//                console.log('aNote='+aNote);
+                if(aNote.includes('b')){
+                    // remove flat
+                    noteOctave = aNote.slice(aNote.length-1,aNote.length)
+                    aNote = aNote.slice(0,aNote.length-2); // chop off the 'b'
+                    aNote += noteOctave;
+                } else if(aNote.includes('#')){
+                    // remove sharp
+                    noteOctave = aNote.slice(aNote.length-1,aNote.length)
+                    aNote = aNote.slice(0,aNote.length-2); // chop off the '#'
+                    aNote += noteOctave;
+                } else {
+                    // add a sharp or flat depending on hasSharps or hasFlats
+                    noteOctave = aNote.slice(aNote.length-1,aNote.length)
+                    aNote = aNote.slice(0,aNote.length-1);
+                    if(hasFlats){
+                        aNote += 'b' + noteOctave;
+                    } else if(hasSharps){
+                        aNote += '#' + noteOctave
+                    } else {
+                        if(randNum1==0){
+                            aNote += 'b';
+                        } else {
+                            aNote += '#';
+                        }
+                        aNote += noteOctave;
+                    }
+                }
+                minorScale[i] = aNote;
+            }
+        }        
+    }
+    return minorScale;
 }
 
 // minor key signatures
@@ -1267,13 +1376,108 @@ function makeMinorKeySigQuestion() {
 // interval numbers
 let indices9 = scrampleValues(7);
 function makeIntervalNumberQuestion() {
-    // returns ['B3','G4','6th']
+    // returns ['B3','G4','6th'] or ['B2','G3','6th']
+    const intervalOffsets = [1,2,3,4,5,6,7];
+    const letters = ['C','D','E','F','G','A','B'];
+    const lettersLen = letters.length;
+    const startingIndex = indices9[randomStart % lettersLen];
+    let interval = [];
+    let octave = 4;
+    let firstNote = letters[startingIndex];
+    let ascendingInterval = getRandomInt(2);
+    const intervalNum = 1 + getRandomInt(7); // used to determine the interval number
+    if(currentClef == 'treble'){
+        octave = 4;
+//        interval = ['B3','G4','6th'];
+    } else if(currentClef == 'bass'){
+        octave = 3;
+        if(firstNote == 'A' || firstNote == 'B'){
+            octave = 2;
+        }
+//        interval = ['B2','G3','6th'];
+    }
+    firstNote += '' + octave;
+    let newIndex = 0;
+    if(ascendingInterval){
+        newIndex = startingIndex+intervalNum;
+        if( newIndex >= lettersLen ){
+            octave++;
+        }
+    } else {
+        newIndex = startingIndex-intervalNum;
+        if(newIndex<0){
+            newIndex += lettersLen;
+            octave--;
+        }
+    }
+    let secondNote = letters[newIndex % lettersLen];
+    secondNote += '' + octave;
+    console.log('firstNote='+firstNote+' intervalNum='+(intervalNum+1)+' secondNote='+secondNote);
+    interval.push(firstNote);
+    interval.push(secondNote);
+    const intervalNumText = numToText[intervalNum];
+    interval.push(intervalNumText);
+    console.log('interval='+interval);
+
+    return interval;
+}
+
+const numToText = {
+    1: '2nd', 2: '3rd', 3: '4th', 4: '5th',
+    5: '6th', 6: '7th', 7: 'octave'
 }
 
 // interval names
 let indices10 = scrampleValues(7);
 function makeIntervalNameQuestion() {
     // returns ['Bb3','G4','Maj6']
+    const intervalOffsets = [1,2,3,4,5,6,7];
+    const letters = ['C','D','E','F','G','A','B'];
+    const lettersLen = letters.length;
+    const startingIndex = indices10[randomStart % lettersLen];
+    let ascendingInterval = getRandomInt(2);
+    let interval = [];
+    let octave = 4;
+    let firstNote = letters[startingIndex];
+    const intervalNum = 1 + getRandomInt(7); // used to determine the interval number
+    if(currentClef == 'treble'){
+        octave = 4;
+//        interval = ['B3','G4','6th'];
+    } else if(currentClef == 'bass'){
+        octave = 3;
+        if(firstNote == 'A' || firstNote == 'B'){
+            octave = 2;
+        }
+//        interval = ['B2','G3','6th'];
+    }
+    firstNote += '' + octave;
+    let newIndex = 0;
+    if(ascendingInterval){
+        newIndex = startingIndex+intervalNum;
+        if( newIndex >= lettersLen ){
+            octave++;
+        }
+    } else {
+        newIndex = startingIndex-intervalNum;
+        if(newIndex<0){
+            newIndex += lettersLen;
+            octave--;
+        }
+    }
+    let secondNote = letters[newIndex % lettersLen];
+    secondNote += '' + octave;
+    console.log('firstNote='+firstNote+' intervalNum='+(intervalNum+1)+' secondNote='+secondNote);
+
+    //  make a chromatic change 
+
+
+    interval.push(firstNote);
+    interval.push(secondNote);
+    const intervalNumText = numToText[intervalNum];
+    interval.push(intervalNumText);
+    console.log('interval='+interval);
+
+    return interval;
 }
 
 // triad quality
@@ -1355,5 +1559,5 @@ const makeNoteFunctions = {
     0: makeSingleNoteQuestion1, 1: makeSingleNoteQuestion2, 2: makeSingleNoteQuestion3,
     3: makeMajorScaleQuestion, 4: makeNoteDurationQuestion, 5: makeMeterQuestion,
     6: makeMajorKeySigQuestion, 7: makeMinorScaleQuestion, 8: makeMinorKeySigQuestion,
-    11: makeTriadQuality, 
+    9: makeIntervalNumberQuestion, 11: makeTriadQuality, 
 } 
