@@ -50,13 +50,13 @@
             font-size: 1.2em;
         }
         .correctAnswer {
-            font-size: 1.2em;
+            font-size: 1.4em;
             background-color: #ededff;
             border: none;
             color: green;
         }
         .incorrectAnswer {
-            font-size: 1.2em;
+            font-size: 1.4em;
             background-color: #ffdddd;
             border: none;
             color: black;
@@ -86,6 +86,15 @@
             text-align: left;
             color: #dd0000;
             text-shadow: 1px 2px 3px black;
+        }
+        #evaluateButton {
+            font-size: 1.2em;
+            background-color: #5555ff;
+            color: #ffffff;
+        }
+        #replayButton {
+            font-size: 1.2em;
+            background-color: #55ff55
         }
     </style>
   </head>
@@ -130,6 +139,8 @@
             </canvas><br /><br />
             <p><span id='display1'></span> <span id='reload'></span></p>
             <div id='evalButton'> <input type='submit' id='evaluateButton' name='evaluateButton' value='Evaluate Answer'></div>
+            &nbsp;&nbsp;&nbsp;
+            <div id='replayItButton'> <input type='button' id='replayButton' name='replayButton' value='replay'></div>
            <br>
             <div class="answerButtons">.</div>
           </div>
